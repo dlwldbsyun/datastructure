@@ -1,5 +1,5 @@
 /*문제 설명
- 이진 트리를 입력받아 전위 순회(preorder traversal), 중위 순회(inorder traversal), 
+ 트리를 입력받아 전위 순회(preorder traversal), 중위 순회(inorder traversal), 
  후위 순회(postorder traversal)한 결과를 출력하는 프로그램을 작성하시오.
 
  입력   첫째 줄에는 이진 트리의 노드의 개수 N(1 ≤ N ≤ 26)이 주어진다. 
@@ -34,10 +34,7 @@ class Node {
 private:
     string element;
     Node* parent;
-    Node* left_child;
-    Node* right_child;
-    bool left_check = true;
-    bool right_check = true;
+    vector<Node*> child_v;
 public:
     Node(string s) {
         this->element = s;
@@ -48,16 +45,15 @@ public:
 };
 
 class Tree {
-private:
+public:
     Node* root;
     vector<Node*> node_v; // 모든 노드를 저장할 벡터
-    string k = "";
-    int left_check = 0;
-public:
+
     Tree(string); // 루트노드 설정
-    void insert(string, string, string);
-    string recursion(Node*);
-    void printPre();
+    void insert(string, string, string); // 부모노드, left자식, right자식
+    void preorder(Node*);
+    void postorder(Node*);
+    // void inorder(Node*);
 };
 
 Tree::Tree(string r) {
@@ -65,102 +61,65 @@ Tree::Tree(string r) {
     this->root = node;
     this->node_v.push_back(node);
 }
-void Tree::insert(string standard, string left, string right) {
-    //순회하면서 자식노드가 있는지 확인
+void Tree::insert(string parent_elem, string left_elem, string right_elem) {
+    // 전체 노드 순회하면서 parent_data찾기
     for (int i = 0; i < node_v.size(); i++) {
-        if (node_v[i]->element == left || node_v[i]->element == right) {
-            cout << "존재하는 자식노드의 값입니다." << endl;
-            return;
-        }
-    }
-    //순회하면서 기준노드가 있는지 확인
-    for (int i = 0; i < node_v.size(); i++) {
-        if (node_v[i]->element == standard) { // 기준 노드가 있다면
-            // left확인
-            cout << "find standard node" << endl;
-            Node* curNode = node_v[i];
-            if (left != ".") {
-                // left 노드가 .이 아니라면 새로운 노드를 만들어서
-                Node* v = new Node(left);
-                // left노드와 standard노드를 연결
-                v->parent = curNode;
-                curNode->left_child = v;
-                // 전체 트리 저장소에 v(left)추가
-                node_v.push_back(v);
-                cout << "insert left" << endl;
+        if (node_v[i]->element == parent_elem) {
+            if (left_elem == ".") { 
+                if (right_elem != ".") {
+                    Node* node_r = new Node(right_elem);
+                    node_r->parent = node_v[i];
+                    node_v[i]->child_v.push_back(node_r);
+                    node_v.push_back(node_r);
+                    continue;
+                }
+                continue;
             }
-            // right 확인
-            if (right != ".") {
-                Node* u = new Node(right);
-                u->parent = curNode;
-                curNode->right_child = u;
-                node_v.push_back(u);
-                cout << "insert right" << endl;
+            else if (right_elem == ".") { 
+                Node* node_l = new Node(left_elem);
+                node_l->parent = node_v[i];
+                node_v[i]->child_v.push_back(node_l);
+                node_v.push_back(node_l);
+                continue; 
             }
-            if (left == ".") {
-                node_v[i]->left_check == false;
-            }
-            if (right == ".") {
-                node_v[i]->right_check == false;
-            }
+            Node* node_l = new Node(left_elem);
+            node_l->parent = node_v[i];
+            node_v[i]->child_v.push_back(node_l);
+            node_v.push_back(node_l);
+            Node* node_r = new Node(right_elem);
+            node_r->parent = node_v[i];
+            node_v[i]->child_v.push_back(node_r);
+            node_v.push_back(node_r);
             return;
         }
     }
 }
-string Tree::recursion(Node* curNode) {
-    // 노드에게 left_child값이 있는지 확인
-    cout << "recursion에 들어온 값: " << curNode->element << endl;
-    // left,right child가 없는 애들은 못들어옴
-    if (curNode->left_check) {
-            k += curNode->left_child->element;
-            cout << "left_k값 : " << k << endl;
-            // left node를 읽었다고 check해주기
-            Node* cur = curNode->left_child;
-            if (cur->left_check) {
-                cur->left_check = false; // 현재 노드의 left노드는 이제 불어올거니 이젠 안읽어도 됌
-                return recursion(cur->left_child);
-            }
-        }
-    if (curNode->right_check) {
-        k += curNode->right_child->element;
-        cout << "right_k값 : " << k << endl;
-        Node* cur = curNode->right_child;
-        if (cur->right_child) {
-            cur->right_check = false;
-            return recursion(cur->right_child);
-        }
+void Tree::preorder(Node* node) {
+    if (!node)return;
+    cout << node->element << " ";
+    for (int i = 0; i < node->child_v.size(); i++) {
+        preorder(node->child_v[i]);
     }
-    else {
-        // 그냥 leaf node 라면
-        if(curNode->element)
-    }
-    k += curNode->element;
-    if (curNode->element == "F") {
-        return k;
-    }
-    cout << "leaf node" << endl;
-        // leaf node에서 right_child가 존재하는 부모노드로 올라가는 법만 더하면 됌
-        // leaf node의 부모노드로 한칸 올라가서 확인 없으면(else) 또 확인
-    return recursion(curNode->parent);
-    
-    return k;
+    cout << endl;
 }
-void Tree::printPre() {
-    // pre-order
-    string result = "A";
-    result += recursion(root);
-    cout << result << endl;
+void Tree::postorder(Node* node) {
+    if (!node)return;
+    for (int i = 0; i < node->child_v.size(); i++) {
+        postorder(node->child_v[i]);
+    }
+    cout << node->element << " ";
 }
-
 int main() {
     int N;
     cin >> N;
-    Tree t("A");
+    Tree t("a");
     for (int i = 0; i < N; i++) {
         string cur, l, r;
         cin >> cur >> l >> r;
         t.insert(cur, l, r);
     }
-    t.printPre();
+    cout << "preorder" << endl;
+    t.preorder(t.node_v[0]);
+    t.postorder(t.node_v[0]);
     return 0;
 }
