@@ -36,6 +36,8 @@ private:
     Node* parent;
     Node* left_child;
     Node* right_child;
+    bool left_check = true;
+    bool right_check = true;
 public:
     Node(string s) {
         this->element = s;
@@ -50,6 +52,7 @@ private:
     Node* root;
     vector<Node*> node_v; // 모든 노드를 저장할 벡터
     string k = "";
+    int left_check = 0;
 public:
     Tree(string); // 루트노드 설정
     void insert(string, string, string);
@@ -94,6 +97,12 @@ void Tree::insert(string standard, string left, string right) {
                 node_v.push_back(u);
                 cout << "insert right" << endl;
             }
+            if (left == ".") {
+                node_v[i]->left_check == false;
+            }
+            if (right == ".") {
+                node_v[i]->right_check == false;
+            }
             return;
         }
     }
@@ -101,27 +110,39 @@ void Tree::insert(string standard, string left, string right) {
 string Tree::recursion(Node* curNode) {
     // 노드에게 left_child값이 있는지 확인
     cout << "recursion에 들어온 값: " << curNode->element << endl;
-    if (curNode->left_child) {
-        k += curNode->left_child->element;
-        cout << "left_k값 : " << k << endl;
-        Node* cur = curNode->left_child;
-        if (cur->left_child) {
-            return recursion(cur->left_child);
+    // left,right child가 없는 애들은 못들어옴
+    if (curNode->left_check) {
+            k += curNode->left_child->element;
+            cout << "left_k값 : " << k << endl;
+            // left node를 읽었다고 check해주기
+            Node* cur = curNode->left_child;
+            if (cur->left_check) {
+                cur->left_check = false; // 현재 노드의 left노드는 이제 불어올거니 이젠 안읽어도 됌
+                return recursion(cur->left_child);
+            }
         }
-    }
-    else if (curNode->right_child) {
+    if (curNode->right_check) {
         k += curNode->right_child->element;
         cout << "right_k값 : " << k << endl;
         Node* cur = curNode->right_child;
         if (cur->right_child) {
+            cur->right_check = false;
             return recursion(cur->right_child);
         }
     }
     else {
-        k += curNode->element;
-        // leaf node에서 right_child가 존재하는 부모노드로 올라가는 법만 더하면 됌
-        return recursion(curNode->parent->right_child);
+        // 그냥 leaf node 라면
+        if(curNode->element)
     }
+    k += curNode->element;
+    if (curNode->element == "F") {
+        return k;
+    }
+    cout << "leaf node" << endl;
+        // leaf node에서 right_child가 존재하는 부모노드로 올라가는 법만 더하면 됌
+        // leaf node의 부모노드로 한칸 올라가서 확인 없으면(else) 또 확인
+    return recursion(curNode->parent);
+    
     return k;
 }
 void Tree::printPre() {
