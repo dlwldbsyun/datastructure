@@ -66,31 +66,35 @@ void Tree::insert(string parent_elem, string left_elem, string right_elem) {
     for (int i = 0; i < node_v.size(); i++) {
         if (node_v[i]->element == parent_elem) {
             if (left_elem == ".") { 
-                if (right_elem != ".") {
+                if (right_elem == ".") {
+                    return;
+                }
+                else {
                     Node* node_r = new Node(right_elem);
                     node_r->parent = node_v[i];
                     node_v[i]->child_v.push_back(node_r);
                     node_v.push_back(node_r);
-                    continue;
+                    return;
                 }
-                continue;
             }
             else if (right_elem == ".") { 
                 Node* node_l = new Node(left_elem);
                 node_l->parent = node_v[i];
                 node_v[i]->child_v.push_back(node_l);
                 node_v.push_back(node_l);
-                continue; 
+                return;
             }
-            Node* node_l = new Node(left_elem);
-            node_l->parent = node_v[i];
-            node_v[i]->child_v.push_back(node_l);
-            node_v.push_back(node_l);
-            Node* node_r = new Node(right_elem);
-            node_r->parent = node_v[i];
-            node_v[i]->child_v.push_back(node_r);
-            node_v.push_back(node_r);
-            return;
+            else {
+                Node* node_l = new Node(left_elem);
+                node_l->parent = node_v[i];
+                node_v[i]->child_v.push_back(node_l);
+                node_v.push_back(node_l);
+                Node* node_r = new Node(right_elem);
+                node_r->parent = node_v[i];
+                node_v[i]->child_v.push_back(node_r);
+                node_v.push_back(node_r);
+                return;
+            }
         }
     }
 }
@@ -100,7 +104,6 @@ void Tree::preorder(Node* node) {
     for (int i = 0; i < node->child_v.size(); i++) {
         preorder(node->child_v[i]);
     }
-    cout << endl;
 }
 void Tree::postorder(Node* node) {
     if (!node)return;
@@ -112,14 +115,16 @@ void Tree::postorder(Node* node) {
 int main() {
     int N;
     cin >> N;
-    Tree t("a");
+    Tree t("A");
     for (int i = 0; i < N; i++) {
         string cur, l, r;
         cin >> cur >> l >> r;
         t.insert(cur, l, r);
     }
-    cout << "preorder" << endl;
+    cout << "---------------pre-order---------------" << endl;
     t.preorder(t.node_v[0]);
+    cout << endl;
+    cout << "---------------post-order---------------" << endl;
     t.postorder(t.node_v[0]);
     return 0;
 }
